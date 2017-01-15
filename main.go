@@ -32,7 +32,22 @@ type Centroid struct {
 	RGBPoint
 }
 
-func Distance(c1 Point, c2 Point) float64 {
+func setCentdoid(color *Color, centroid Centroid) {
+	color.Cluster = centroid
+}
+
+func multiply(c1 Point, c2 Point) (uint32, uint32, uint32) {
+	r1, g1, b1 := c1.GetCoords()
+	r2, g2, b2 := c2.GetCoords()
+	r := r1 * r2
+	g := g1 * g2
+	b := b1 * b2
+
+	return r, g, b
+}
+
+// Find distance between two points
+func distance(c1 Point, c2 Point) float64 {
 	r1, g1, b1 := c1.GetCoords()
 	r2, g2, b2 := c2.GetCoords()
 	r := r1 - r2
@@ -41,11 +56,13 @@ func Distance(c1 Point, c2 Point) float64 {
 	return math.Sqrt(float64(r*r + g*g + b*b))
 }
 
-func NearestCentroid(c1 Point, centroids []Point) Point {
+// Iterate through centroids to deterimine which is closest
+// O(n) running time
+func nearestCentroid(c1 Point, centroids []Centroid) Centroid {
 	lowestDistance := float64(0.0)
 	index := -1
 	for i, centroid := range centroids {
-		distance := Distance(c1, centroid)
+		distance := distance(c1, centroid)
 		if distance <= lowestDistance {
 			lowestDistance = distance
 			index = i
@@ -54,8 +71,9 @@ func NearestCentroid(c1 Point, centroids []Point) Point {
 	return centroids[index]
 }
 
-func generateCentroids(r int32) []Point {
-	centroids := make([]Centroid, r)
+// Generate n number of centroids
+func generateCentroids(n int32) []Centroid {
+	centroids := make([]Centroid, n)
 	for i, _ := range centroids {
 		r := uint32(rand.Intn(65535))
 		g := uint32(rand.Intn(65535))
@@ -65,8 +83,47 @@ func generateCentroids(r int32) []Point {
 	return centroids
 }
 
-func main() {
-	reader, err := os.Open("testdata.png")
+// Takes an image and a list of pregenerated centroids to generate
+// a list of colors - points with an assigned cluster
+func addColors(m image.Image, centroids []Centroid) []Color {
+	bounds := m.Bounds()
+	var colors []Color
+	i := 0
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			r, g, b, _ := m.At(x, y).RGBA()
+			cluster := nearestCentroid(RGBPoint{
+				Red:   r,
+				Green: g,
+				Blue:  b,
+			},
+				centroids)
+			colors = append(colors, Color{
+				RGBPoint: RGBPoint{
+					Red:   r,
+					Green: g,
+					Blue:  b,
+				},
+				Cluster: cluster,
+			})
+		}
+	}
+	return colors
+}
+
+func recalculateCentroids(colors *[]Color, centroids *[]Centroid) ([]Color, []Centroid) {
+	for _, centroid := range *centroids {
+
+	}
+	for _, color := range *colors {
+		colorCentroid := nearestCentroid(color, *centroids)
+
+	}
+}
+
+// Given an image location, open image and return an image.Image
+func importImage(i string) image.Image {
+	reader, err := os.Open(i)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -76,28 +133,19 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	bounds := m.Bounds()
-	centroids := generateCentroids(6)
 
-	// Add colors to slice
-	colors := make([]Color, (bounds.Min.Y * bounds.Min.X))
-	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
-		for x := bounds.Min.X; x < bounds.Max.X; x++ {
-			r, g, b, _ := m.At(x, y).RGBA()
-			cluster := NearestCentroid(RGBPoint{
-				Red:   r,
-				Green: g,
-				Blue:  b,
-			},
-				[]Point(centroids))
-			colors[y*x] = Color{
-				RGBPoint: RGBPoint{
-					Red:   r,
-					Green: g,
-					Blue:  b,
-				},
-				Cluster: cluster,
-			}
-		}
-	}
+	return m
+}
+
+// Given an image and a number of desired clusters generate a slice
+// of colors
+func convertImage(m image.Image, n int32) []Color {
+	centroids := generateCentroids(n)
+	return addColors(m, centroids)
+}
+
+func main() {
+	m := importImage("testimage.png")
+	colors := convertImage(m, 6)
+
 }
