@@ -32,7 +32,7 @@ type Centroid struct {
 	RGBPoint
 }
 
-func setCentdoid(color *Color, centroid Centroid) {
+func setCentroid(color *Color, centroid Centroid) {
 	color.Cluster = centroid
 }
 
@@ -111,13 +111,47 @@ func addColors(m image.Image, centroids []Centroid) []Color {
 	return colors
 }
 
+func filter(vs *[]Color, cs Centroid, f func(Color, Centroid) bool) []Color {
+	vsf := make([]Color, 0)
+	for _, v := range *vs {
+		if f(v, cs) {
+			vsf = append(vsf, v)
+		}
+	}
+	return vsf
+}
+
+func compareCentroid(color Color, centroid Centroid) bool {
+	if color.Cluster == centroid {
+		return true
+	}
+	return false
+}
+
+func calcPosition(colors []Color, centroid *Centroid) *Centroid {
+	var rt, gt, bt uint32
+	total := uint32(len(colors))
+	for i, color := range colors {
+		r, g, b := color.GetCoords()
+		rt += r
+		gt += g
+		bt += b
+	}
+	centroid.Red = rt / total
+	centroid.Green = gt / total
+	centroid.Blue = bt / total
+
+	return centroid
+}
+
 func recalculateCentroids(colors *[]Color, centroids *[]Centroid) ([]Color, []Centroid) {
 	for _, centroid := range *centroids {
-
+		centroidColors := filter(colors, centroid, compareCentroid)
+		calcPosition(*colors, &centroid)
 	}
 	for _, color := range *colors {
 		colorCentroid := nearestCentroid(color, *centroids)
-
+		setCentroid(&color, colorCentroid)
 	}
 }
 
