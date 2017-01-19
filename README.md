@@ -47,6 +47,7 @@ Future development
 - Update centroid generation (current # of )
 - Fix comparison of colors and centroids -- O(n^2) current
 - Speed recoloring of image
+- Use err
 
 
 Libraries used
