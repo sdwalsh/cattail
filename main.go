@@ -3,41 +3,73 @@ package main
 import (
 	"bufio"
 	"fmt"
-	_ "image/jpeg"
 	"log"
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/sdwalsh/cattail/kmeans"
 )
 
+func readTrim(reader *bufio.Reader, s string, e error) string {
+	fmt.Printf(s, e)
+	c, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatal("Error parsing")
+	}
+	t := strings.TrimSpace(c)
+	return t
+}
+
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("enter image name: ")
-	name, err := reader.ReadString('\n')
+	c, err := reader.ReadString('\n')
 	if err != nil {
 		log.Fatal("Error parsing name")
 	}
-	rand.Seed(time.Now().UTC().UnixNano())
-	fmt.Println("\nbegin timer")
-	startTime := time.Now()
+	t := strings.TrimSpace(c)
 
-	m := kmeans.ImportImage(name)
+	rand.Seed(time.Now().UTC().UnixNano())
+
+	m, err := kmeans.ImportImage(t)
+	for err != nil {
+		t = readTrim(reader, "Error! (%v) Try entering an image again: ", err)
+		m, err = kmeans.ImportImage(t)
+	}
 	fmt.Printf("image imported\n")
 
 	fmt.Print("enter number of centroids: ")
-	c, err := reader.ReadString('\n')
+	c, err = reader.ReadString('\n')
 	if err != nil {
 		log.Fatal("Error parsing number")
 	}
-	i, err := strconv.Atoi(c)
-	if err != nil {
-		log.Fatal(err)
+	t = strings.TrimSpace(c)
+	nCentroids, err := strconv.Atoi(t)
+	for err != nil {
+		t = readTrim(reader, "Error! (%v) Try entering a number again: ", err)
+		nCentroids, err = strconv.Atoi(t)
 	}
 
-	colors, centroids := kmeans.ConvertImage(m, i)
+	fmt.Print("enter max number of iterations: ")
+	c, err = reader.ReadString('\n')
+	if err != nil {
+		log.Fatal("Error parsing number")
+	}
+	t = strings.TrimSpace(c)
+	nIterations, err := strconv.Atoi(t)
+	for err != nil {
+		t = readTrim(reader, "Error! (%v) Try entering a number again: ", err)
+		nIterations, err = strconv.Atoi(t)
+	}
+
+	fmt.Println("\nbegin timer")
+	startTime := time.Now()
+	fmt.Printf("start time: %v \n", startTime)
+
+	colors, centroids := kmeans.ConvertImage(m, nCentroids)
 
 	fmt.Printf("image converted\n")
 	fmt.Printf("colors size :%v \n", len(colors))
@@ -51,7 +83,7 @@ func main() {
 
 	fmt.Printf("begin convergence tests\n")
 	fmt.Println("-------------------------------------------------")
-	for i := 0; !kmeans.Convergence(centroids, oldCentroids) && i < 12; i++ {
+	for i := 0; i < nIterations; i++ {
 		fmt.Printf("loop #%v\n", i)
 		t1 := time.Now()
 
@@ -73,8 +105,14 @@ func main() {
 		fmt.Println("\n/////////////////////////////////////////////////")
 	}
 	fmt.Println("begin rendering")
-	kmeans.CreateColorImage(m, centroids)
+	err = kmeans.CreateColorImage(m, centroids)
+	if err != nil {
+		fmt.Printf("Error! (%v) cannot create image", err)
+	}
+	err = kmeans.CreateColorSwatch(centroids)
+	if err != nil {
+		fmt.Printf("Error! (%v) cannot create swatch", err)
+	}
 	endTime := time.Now()
-	//fmt.Printf("%+v \n", centroids)
 	fmt.Printf("total time to complete: %v \n", endTime.Sub(startTime))
 }

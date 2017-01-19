@@ -85,11 +85,37 @@ func GenerateCentroids(n int) []*Centroid {
 	}
 }
 
+// Generate n number of centroids between 0 - 1
+func GenerateCentroid() *Centroid {
+	var centroid *Centroid
+	r := rand.Float64()
+	g := rand.Float64()
+	b := rand.Float64()
+	centroid = &Centroid{Color: colorful.Color{R: r, G: g, B: b}}
+	return centroid
+}
+
+func emptyCentroid(colors []Color, centroids []*Centroid) bool {
+	for _, centroid := range centroids {
+		if len(Filter(colors, centroid, CompareCentroid)) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
 // Given an image and a number of desired clusters generate a slice of colors and
 // a slice of centroid pointers
 func ConvertImage(m image.Image, n int) ([]Color, []*Centroid) {
 	centroids := GenerateCentroids(n)
-	return AddColors(m, centroids), centroids
+	colors := AddColors(m, centroids)
+
+	for emptyCentroid(colors, centroids) {
+		fmt.Println("reroll")
+		colors, centroids = reroll(colors, centroids)
+		colors = RecalculateColors(colors, centroids)
+	}
+	return colors, centroids
 }
 
 // Given a slice of colors, a centroid, and a function to compareCentroid
@@ -151,7 +177,30 @@ func RecalculateColors(colors []Color, centroids []*Centroid) []Color {
 	return newColors
 }
 
-func CreateColorImage(m image.Image, centroids []*Centroid) {
+func CreateColorSwatch(centroids []*Centroid) error {
+	length := len(centroids)
+
+	// new image that will serve as the generated picture (x0, y0, x1, y1)
+	img := image.NewRGBA(image.Rect(0, 0, 40, length*60))
+
+	for i, centroid := range centroids {
+		draw.Draw(img, image.Rect(0, i*40, 40, ((i+1)*40)), &image.Uniform{centroid.Color}, image.ZP, draw.Src)
+	}
+
+	toimg, err := os.Create("colorswatch.png")
+	if err != nil {
+		return err
+	}
+	defer toimg.Close()
+	err = png.Encode(toimg, img)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func CreateColorImage(m image.Image, centroids []*Centroid) error {
 	bounds := m.Bounds()
 	x_0 := 0
 	y_0 := 0
@@ -175,12 +224,15 @@ func CreateColorImage(m image.Image, centroids []*Centroid) {
 
 	toimg, err := os.Create("colorblend.png")
 	if err != nil {
-		fmt.Printf("Error: %v", err)
-		return
+		return err
 	}
 	defer toimg.Close()
+	err = png.Encode(toimg, img)
+	if err != nil {
+		return err
+	}
 
-	png.Encode(toimg, img)
+	return nil
 }
 
 func Convergence(centroids []*Centroid, oldCentroids []Centroid) bool {
@@ -197,21 +249,34 @@ func Convergence(centroids []*Centroid, oldCentroids []Centroid) bool {
 }
 
 // Reroll the random position of a centroid (useful if empty)
-func (c *Centroid) reroll(colors []Color) {
-
+func reroll(colors []Color, centroids []*Centroid) ([]Color, []*Centroid) {
+	var newCentroids []*Centroid
+	for i, centroid := range centroids {
+		if len(Filter(colors, centroid, CompareCentroid)) == 0 {
+			fmt.Println("generate new centroid")
+			fmt.Printf("index:: %v \n", i)
+			fmt.Printf("current:: %v \n", centroid)
+			c := GenerateCentroid()
+			fmt.Printf("new:: %v \n", c)
+			newCentroids = append(newCentroids, c)
+		} else {
+			newCentroids = append(newCentroids, centroid)
+		}
+	}
+	return colors, newCentroids
 }
 
 // Given an image location, open image and return an image.Image
-func ImportImage(i string) image.Image {
+func ImportImage(i string) (image.Image, error) {
 	reader, err := os.Open(i)
-	if err != nil {
-		log.Fatal(err)
-	}
 	defer reader.Close()
+	if err != nil {
+		return nil, err
+	}
 
 	m, _, err := image.Decode(reader)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return m
+	return m, err
 }
