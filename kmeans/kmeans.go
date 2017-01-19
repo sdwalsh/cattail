@@ -184,7 +184,7 @@ func CreateColorSwatch(centroids []*Centroid) error {
 	img := image.NewRGBA(image.Rect(0, 0, 40, length*60))
 
 	for i, centroid := range centroids {
-		draw.Draw(img, image.Rect(0, i*40, 40, ((i+1)*40)), &image.Uniform{centroid.Color}, image.ZP, draw.Src)
+		draw.Draw(img, image.Rect(0, i*60, 40, ((i+1)*60)), &image.Uniform{centroid.Color}, image.ZP, draw.Src)
 	}
 
 	toimg, err := os.Create("colorswatch.png")
