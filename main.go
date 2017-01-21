@@ -92,8 +92,7 @@ func main() {
 			oldCentroids = append(oldCentroids, *centroid)
 		}
 
-		centroids = kmeans.RecalculateCentroids(colors, centroids)
-		colors = kmeans.RecalculateColors(colors, centroids)
+		colors, centroids = kmeans.Update(colors, centroids)
 
 		t2 := time.Now()
 		fmt.Printf("time: %v \n", t2.Sub(t1))
@@ -104,6 +103,7 @@ func main() {
 		}
 		fmt.Println("\n/////////////////////////////////////////////////")
 	}
+
 	fmt.Println("begin rendering")
 	err = kmeans.CreateColorImage(m, centroids)
 	if err != nil {
