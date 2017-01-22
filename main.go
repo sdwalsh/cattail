@@ -3,8 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
-	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -23,8 +23,7 @@ func readTrim(reader *bufio.Reader, s string, e error) string {
 	return t
 }
 
-func main() {
-	reader := bufio.NewReader(os.Stdin)
+func importImage(reader *io.Reader) {
 	fmt.Print("enter image name: ")
 	c, err := reader.ReadString('\n')
 	if err != nil {
@@ -32,14 +31,16 @@ func main() {
 	}
 	t := strings.TrimSpace(c)
 
-	rand.Seed(time.Now().UTC().UnixNano())
-
 	m, err := kmeans.ImportImage(t)
 	for err != nil {
 		t = readTrim(reader, "Error! (%v) Try entering an image again: ", err)
 		m, err = kmeans.ImportImage(t)
 	}
 	fmt.Printf("image imported\n")
+}
+
+func main() {
+	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Print("enter number of centroids: ")
 	c, err = reader.ReadString('\n')

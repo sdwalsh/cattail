@@ -1,0 +1,30 @@
+package kmeans
+
+import colorful "github.com/lucasb-eyer/go-colorful"
+
+type Color struct {
+	Color   colorful.Color
+	Cluster *Centroid
+}
+
+// CIE94 provides distance method that is closer to human perception
+// Delta E	Perception
+// <= 1.0	Not perceptible by human eyes.
+// 1 - 2	Perceptible through close observation.
+// 2 - 10	Perceptible at a glance.
+// 11 - 49	Colors are more similar than opposite
+// 100	Colors are exact opposite
+// http://zschuessler.github.io/DeltaE/learn/
+func (color Color) nearestCentroid(centroids []*Centroid) *Centroid {
+	// set lowest distance to max value (opposites)
+	lowestDistance := 100.0
+	var address *Centroid
+	for _, centroid := range centroids {
+		distance := color.Color.DistanceCIE94(centroid.Color)
+		if distance < lowestDistance {
+			lowestDistance = distance
+			address = centroid
+		}
+	}
+	return address
+}
