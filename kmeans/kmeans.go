@@ -1,6 +1,7 @@
 package kmeans
 
 import (
+	"fmt"
 	"image"
 	"image/draw"
 	_ "image/jpeg"
@@ -21,6 +22,16 @@ type Image struct {
 }
 
 type OldImage struct {
+}
+
+func (m *Image) PrintCentroids() {
+	for i, centroid := range m.Centroids {
+		fmt.Printf("number: %v \n", i)
+		fmt.Printf("centroid: %v \n", centroid)
+		centroidColors := m.filter(centroid, compareCentroid)
+		total := len(centroidColors)
+		fmt.Printf("count: %v \n", total)
+	}
 }
 
 // Easy public combined function that will return an image upon completion of k-means
