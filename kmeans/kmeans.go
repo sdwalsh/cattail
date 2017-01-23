@@ -10,23 +10,20 @@ import (
 	"os"
 	"time"
 
-	"github.com/lucasb-eyer/go-colorful"
+	colorful "github.com/lucasb-eyer/go-colorful"
 )
 
 type Image struct {
 	ImportedImage image.Image
 	Colors        []Color
 	Centroids     []*Centroid
-	//Old  OldImage
+	//OldCentroids  []Centroid
 	//CentroidPop   map[*Centroid]int
-}
-
-type OldImage struct {
 }
 
 func (m *Image) PrintCentroids() {
 	for i, centroid := range m.Centroids {
-		fmt.Printf("number: %v \n", i)
+		fmt.Printf("number: %v ", i)
 		fmt.Printf("centroid: %v \n", centroid)
 		centroidColors := m.filter(centroid, compareCentroid)
 		total := len(centroidColors)

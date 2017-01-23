@@ -11,26 +11,26 @@ import (
 
 // Main loop of k-means
 func (image *Image) Update() {
-	image.recalculateColors()
 	image.recalculateCentroids()
+	image.recalculateColors()
 }
 
 // Takes an image and a list of pregenerated centroids to generate
 // a list of colors (points with an assigned cluster)
 // bounds do not necessarily start at 0, use bounds.Min and bounds.Max instead
 // colorful.Color takes float64 [0..1] divide by alpha pre-multiplied value provided by RGBA()
-func addColors(m image.Image, centroids []*Centroid) *[]Color {
+func addColors(m image.Image, centroids []*Centroid) []Color {
 	bounds := m.Bounds()
 	var colors []Color
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
 			r, g, b, _ := m.At(x, y).RGBA()
 			color := Color{Color: colorful.Color{R: float64(r) / float64(65535), G: float64(g) / float64(65535), B: float64(b) / float64(65535)}, Cluster: nil}
-			color.Cluster = color.nearestCentroid(centroids)
+			color.setCluster(color.nearestCentroid(centroids))
 			colors = append(colors, color)
 		}
 	}
-	return &colors
+	return colors
 }
 
 // Generate n number of centroids randomly initalized between 0 - 1
@@ -69,7 +69,7 @@ func convertImage(m image.Image, n int) *Image {
 	// Generate components of an Image
 	centroids := generateCentroids(n)
 	colors := addColors(m, centroids)
-	image := Image{ImportedImage: m, Colors: *colors, Centroids: centroids}
+	image := Image{ImportedImage: m, Colors: colors, Centroids: centroids}
 
 	for image.containsEmptyCentroid() {
 		image.reroll()
@@ -80,7 +80,7 @@ func convertImage(m image.Image, n int) *Image {
 
 // Compare the values of a color's cluster to a given centroid
 func compareCentroid(color Color, centroid *Centroid) bool {
-	if *color.Cluster == *centroid {
+	if color.Cluster == centroid {
 		return true
 	}
 	return false
@@ -111,16 +111,19 @@ func (m *Image) recalculateCentroids() {
 				at += a
 				bt += b
 			}
-			centroid.Color = colorful.Lab(lt/float64(total), at/float64(total), bt/float64(total))
+			centroid.setColor(colorful.Lab(lt/float64(total), at/float64(total), bt/float64(total)))
 		}
 	}
 }
 
+// Recalculate the nearestCentroid (replace centroid address regardless)
 func (image *Image) recalculateColors() {
+	var newColors []Color
 	for _, color := range image.Colors {
 		cluster := color.nearestCentroid(image.Centroids)
-		*color.Cluster = *cluster
+		newColors = append(newColors, Color{Color: color.Color, Cluster: cluster})
 	}
+	image.Colors = newColors
 }
 
 /*
@@ -140,16 +143,15 @@ func (m *Image) convergence() bool {
 
 // Reroll empty centroids in an image
 func (image *Image) reroll() {
-	var newCentroids []*Centroid
+	var c []*Centroid
 	for _, centroid := range image.Centroids {
 		if centroid.isEmpty(image) {
-			c := generateCentroid()
-			newCentroids = append(newCentroids, c)
+			c = append(c, generateCentroid())
 		} else {
-			newCentroids = append(newCentroids, centroid)
+			c = append(c, centroid)
 		}
 	}
-	image.Centroids = newCentroids
+	image.Centroids = c
 }
 
 // Given an image location, open image and return an image.Image

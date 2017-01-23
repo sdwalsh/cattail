@@ -7,6 +7,23 @@ type Color struct {
 	Cluster *Centroid
 }
 
+// Getters and Setters
+func (c Color) getColor() colorful.Color {
+	return c.Color
+}
+
+func (c Color) getCluster() *Centroid {
+	return c.Cluster
+}
+
+func (c *Color) setColor(color colorful.Color) {
+	c.Color = color
+}
+
+func (c *Color) setCluster(cluster *Centroid) {
+	c.Cluster = cluster
+}
+
 // CIE94 provides distance method that is closer to human perception
 // Delta E	Perception
 // <= 1.0	Not perceptible by human eyes.
