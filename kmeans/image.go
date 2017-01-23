@@ -33,7 +33,7 @@ func addColors(m image.Image, centroids []*Centroid) []Color {
 	return colors
 }
 
-// Generate n number of centroids randomly initalized between 0 - 1
+// Generate n number of centroids randomly initialized between 0 - 1
 func generateCentroids(n int) []*Centroid {
 	centroids := make([]*Centroid, 0)
 	for i := 0; i < n; i++ {
