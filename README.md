@@ -1,5 +1,8 @@
 cattail
 =======
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/eabbb1924a2343dd855f90b6eef523d7)](https://www.codacy.com/app/sdwalsh/cattail?utm_source=github.com&utm_medium=referral&utm_content=sdwalsh/cattail&utm_campaign=badger)
+
 categorize colors in an image using k-means clustering
 
 Algorithm / Structure
