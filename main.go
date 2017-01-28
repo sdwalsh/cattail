@@ -72,9 +72,9 @@ func nCentroids(reader *bufio.Reader) (int, error) {
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	nIterations, err := nIterations(reader)
-	nCentroids, err := nCentroids(reader)
-	m, err := importImage(reader, nCentroids)
+	nIterations, _ := nIterations(reader)
+	nCentroids, _ := nCentroids(reader)
+	m, _ := importImage(reader, nCentroids)
 
 	fmt.Println("\nbegin timer")
 	startTime := time.Now()
@@ -87,7 +87,7 @@ func main() {
 	}
 
 	fmt.Println("begin rendering")
-	err = m.CreateColorImage()
+	err := m.CreateColorImage()
 	if err != nil {
 		fmt.Printf("Error! (%v) cannot create image", err)
 	}

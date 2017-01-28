@@ -2,6 +2,7 @@ package kmeans
 
 import colorful "github.com/lucasb-eyer/go-colorful"
 
+// Centroid type is a RGBA point
 type Centroid struct {
 	Color colorful.Color
 }

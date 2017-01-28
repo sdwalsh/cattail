@@ -2,6 +2,7 @@ package kmeans
 
 import colorful "github.com/lucasb-eyer/go-colorful"
 
+// Color type is a RGBA point (of a pixel) and the centroid nearest to the color
 type Color struct {
 	Color   colorful.Color
 	Cluster *Centroid
@@ -32,12 +33,12 @@ func (c *Color) setCluster(cluster *Centroid) {
 // 11 - 49	Colors are more similar than opposite
 // 100	Colors are exact opposite
 // http://zschuessler.github.io/DeltaE/learn/
-func (color Color) nearestCentroid(centroids []*Centroid) *Centroid {
+func (c Color) nearestCentroid(centroids []*Centroid) *Centroid {
 	// set lowest distance to max value (opposites)
 	lowestDistance := 100.0
 	var address *Centroid
 	for _, centroid := range centroids {
-		distance := color.Color.DistanceCIE94(centroid.Color)
+		distance := c.Color.DistanceCIE94(centroid.Color)
 		if distance < lowestDistance {
 			lowestDistance = distance
 			address = centroid
