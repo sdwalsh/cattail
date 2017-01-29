@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/sdwalsh/cattail.svg?branch=master)](https://travis-ci.org/sdwalsh/cattail)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sdwalsh/cattail)](https://goreportcard.com/report/github.com/sdwalsh/cattail)
-[![GoDoc](https://godoc.org/github.com/sdwalsh/cattail/kmeans?status.svg)](http://godoc.org/sdwalsh/cattail/kmeans)
+[![GoDoc](https://godoc.org/github.com/sdwalsh/cattail/kmeans?status.svg)](https://godoc.org/github.com/sdwalsh/cattail/kmeans)
 
 cattail
 =======
