@@ -23,6 +23,6 @@ func (c *Centroid) count(image *Image) int {
 	return count
 }
 
-func (centroid *Centroid) isEmpty(image *Image) bool {
-	return centroid.count(image) == 0
+func (c *Centroid) isEmpty(image *Image) bool {
+	return c.count(image) == 0
 }
