@@ -6,6 +6,8 @@ cattail
 =======
 categorize colors in an image using k-means clustering
 
+### This project was created in order to better learn golang. Lacks idiomatic golang and best practices.
+
 Algorithm / Structure
 ---------------------
 ### k-means clustering
